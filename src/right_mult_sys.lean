@@ -5,6 +5,9 @@ import category_theory.morphism_property
 -- that the resulting category is much easier to work with.
 -- See Stacks Project [Tag 04VB]
 
+-- I am not sure why I called this a verdier localization - I got 
+-- it confused with Verdier quotient I think. 
+
 noncomputable theory
 
 namespace category_theory
