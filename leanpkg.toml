@@ -1,0 +1,8 @@
+[package]
+name = "derived-cats"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.50.3"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "13cd3e89b30352d5b1b7349f5537ea18ba878e40"}
