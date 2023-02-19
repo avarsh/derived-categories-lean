@@ -217,10 +217,10 @@ let Y' := v₁.obj, Z' := v₂.obj in
 def comp_valley_from_data {X Y Z : left_calculus C M} 
     (v₁ : valley X Y) (v₂ : valley Y Z) (data : comp_data v₁ v₂)
   : valley X Z :=
-  { obj := ⟨ comp_data.W ⟩,
-    f   := v₁.f ≫ comp_data.h,
-    s   := v₂.s ≫ comp_data.u,
-    qis := M.comp v₂.s comp_data.u ⟨v₂.qis, comp_data.hu⟩ }
+  { obj := ⟨ data.W ⟩,
+    f   := v₁.f ≫ data.h,
+    s   := v₂.s ≫ data.u,
+    qis := M.comp v₂.s data.u ⟨v₂.qis, data.hu⟩ }
 
 -- As a default, we can always define composition using the Ore data
 def comp_valley {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y Z) : valley X Z :=
@@ -253,21 +253,52 @@ def comp {X Y Z : left_calculus C M} (f : hom_type X Y) (g : hom_type Y Z) :=
 
 lemma id_comp' (X Y : left_calculus C M) (f :hom_type X Y) :
   comp (id X) f = f :=
-let g := comp (id X) f, 
-    g' := comp_valley (id_valley X) f.out in
+let g  := comp (id X) f,
+    f' := f.out,
+    data : comp_data (id_valley X) f' :=
+      { W := f'.obj.as,
+        h := f'.f,
+        u := (𝟙 f'.obj.as),
+        hu := M.id,
+        comm := have h : (id_valley X).s = 𝟙 X.as, from rfl,
+          by {simp, rw h, simp},
+      },
+    g' := comp_valley_from_data (id_valley X) f.out data in
 begin
-  suffices hlift : veq X Y g.out f.out, from begin
+  suffices hlift : veq X Y g.out f', from begin
       apply quotient.out_equiv_out.mp,
       exact hlift,
     end,
   have h₁ : veq X Y g.out g', from begin
-      sorry
+      suffices heq : g = ⟦g'⟧, from begin 
+        have hout : veq X Y g.out (⟦g'⟧.out), from quotient.out_equiv_out.mpr heq,
+        have hout' : veq X Y ⟦g'⟧.out g', from quotient.mk_out g',
+        exact valley_equiv_trans X Y hout hout',
+      end,
+      -- We will need to apply both comp_independent_of_data
+      -- and comp_well_def here.
+      sorry,
     end,
-  suffices h' : veq X Y g' f.out, from valley_equiv_trans X Y h₁ h',
-  sorry
+  suffices h' : veq X Y g' f', from valley_equiv_trans X Y h₁ h',
+  use g', use 𝟙 g'.obj.as, use 𝟙 g'.obj.as, 
+  simp,
+  have heq₁ : g'.f = (𝟙 X.as ≫ f'.f), from rfl,
+  have heq₂ : g'.s = (f'.s ≫ 𝟙 f'.obj.as), from rfl,
+  rw [heq₁, heq₂],
+  have h₁ : 𝟙 g'.obj.as = 𝟙 f'.obj.as, from rfl,
+  rw h₁,
+  simp,
 end
 
 -- Define the category structure
+
+-- Question about choice: I'm defining a category where the morphisms are
+-- some structure under an equivalence relation. When defining composition,
+-- there's a bunch of choices which are made, but the quivalence class
+-- of the composition is independent of these choices. 
+-- It looks like the only place where I need this independence is when
+-- proving id_comp', comp_id' and assoc'. Is this enough? Shouldn't I have to prove 
+-- it at the point where composition is even defined, i.e. while taking the quotient?
 
 instance : category (left_calculus C M) :=
 { hom  := hom_type,
