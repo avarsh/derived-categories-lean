@@ -3,7 +3,7 @@ import category_theory.abelian.basic
 import algebra.homology.homotopy_category
 import category_theory.morphism_property
 
-import verdier
+import multiplicative_system
 
 open category_theory
 noncomputable theory
@@ -37,11 +37,11 @@ instance h_quasi_iso_of_iso {X Y : homotopy_category A c} (f : X ⟶ Y) [is_iso 
   end }
 
 
-def quasi_iso_is_rms : verdier.right_mult_sys (W A) := 
-{ id   := λ X, ⟨ λ i, sorry ⟩,
-  comp := sorry,
-  sq   := sorry,
-  pair := sorry}
+def quasi_iso_is_rms : left_mult_sys (W A) := 
+{ id     := λ X, ⟨ λ i, sorry ⟩,
+  comp   := sorry,
+  ore    := sorry,
+  cancel := sorry}
 
 end derived
 
