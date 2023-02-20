@@ -3,7 +3,8 @@ import category_theory.abelian.basic
 import algebra.homology.homotopy_category
 import category_theory.morphism_property
 
-import calculus_of_fractions
+import cof.basic
+import cof.category
 
 open category_theory
 noncomputable theory
