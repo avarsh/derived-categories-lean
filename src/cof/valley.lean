@@ -69,12 +69,12 @@ begin
 end
 
 
-lemma triple_comp {W X Y Z : C} (M : left_mult_sys S) (f₁ : W ⟶ X) (f₂ : X ⟶ Y) (f₃ : Y ⟶ Z) :
+lemma triple_comp {W X Y Z : C} (M : left_mult_sys S) {f₁ : W ⟶ X} {f₂ : X ⟶ Y} {f₃ : Y ⟶ Z} :
   S f₁ ∧ S f₂ ∧ S f₃ → S (f₁ ≫ f₂ ≫ f₃) := 
 begin
   rintro ⟨ s₁, s₂, s₃ ⟩,
-  have s₄ : S (f₂ ≫ f₃) := M.comp f₂ f₃ ⟨s₂, s₃⟩,
-  exact M.comp f₁ (f₂ ≫ f₃) ⟨s₁, s₄⟩  
+  have s₄ : S (f₂ ≫ f₃) := M.comp ⟨s₂, s₃⟩,
+  exact M.comp ⟨s₁, s₄⟩  
 end
 
 -- If both u and v are dominated by some w, then they are equivalent valleys
@@ -92,11 +92,11 @@ begin
     rw [←hb.right, ←ha.right] at hcomm₁,
     simp at hcomm₁,
     exact hcomm₁ },
-  have ht : _ := M.cancel (b ≫ s₁) (a ≫ c₁) w.s ⟨w.qis, hcancel⟩,
+  have ht : _ := M.cancel ⟨w.qis, hcancel⟩,
   rcases ht with ⟨ Z₂, t, ht₁, ht₂ ⟩,
 
   use Z₂, use u.f ≫ c₁ ≫ t, use v.s ≫ s₁ ≫ t,
-  exact triple_comp M v.s s₁ t ⟨v.qis, hc₁, ht₁⟩,
+  exact triple_comp M ⟨v.qis, hc₁, ht₁⟩,
 
   use c₁ ≫ t,
   use s₁ ≫ t,
@@ -124,11 +124,9 @@ end
 
 lemma valley_equiv_trans (X Y : left_calculus C M) : transitive (veq X Y) :=
 begin
-  intros u v w huv hvw,
-  rcases huv with ⟨ v₁, ⟨auv, a, i, j, k, l ⟩ ⟩,  
-  rcases hvw with ⟨ v₂, ⟨b, avw, i', j', k', l' ⟩ ⟩,  
-  have uelem : (u E v₁), from ⟨ auv, ⟨ i, j ⟩ ⟩,
-  have welem : (w E v₂), from ⟨ avw, ⟨ k', l' ⟩ ⟩ ,
+  intros u v w,
+  rintro ⟨v₁, ⟨auv, a, i, j, k, l⟩⟩, 
+  rintro ⟨v₂, ⟨b, avw, i', j', k', l'⟩⟩,
   have elem' : ∃ x, (x E v₁) ∧ (x E v₂), from begin
     use v,
     have velem₁ : (v E v₁), from ⟨ a, ⟨ k, l ⟩ ⟩,

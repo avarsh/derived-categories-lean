@@ -68,7 +68,11 @@ def comp_valley_from_data {X Y Z : left_calculus C M}
   { obj := ⟨ data.W ⟩,
     f   := v₁.f ≫ data.h,
     s   := v₂.s ≫ data.u,
-    qis := M.comp v₂.s data.u ⟨v₂.qis, data.hu⟩ }
+    qis := M.comp ⟨v₂.qis, data.hu⟩ }
+
+lemma comp_valley_obj {X Y Z : left_calculus C M} 
+    (v₁ : valley X Y) (v₂ : valley Y Z) (data : comp_data v₁ v₂)
+  : (comp_valley_from_data v₁ v₂ data).obj.as = data.W := rfl
 
 -- As a default, we can always define composition using the Ore data
 def comp_valley {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y Z) : valley X Z :=
@@ -78,9 +82,39 @@ def comp_valley {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y
 
 lemma comp_independent_of_data' {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y Z) (d₁ d₂ : comp_data v₁ v₂) :
   ⟦ comp_valley_from_data v₁ v₂ d₁ ⟧ = ⟦ comp_valley_from_data v₁ v₂ d₂ ⟧  :=
-begin
-  sorry
+let c₁ := comp_valley_from_data v₁ v₂ d₁, c₂ := comp_valley_from_data v₁ v₂ d₂ in
+match M.ore d₂.u d₁.u d₁.hu with ⟨W, h', u', hu', hc⟩ := 
+  begin
+    have h₁ : _, by calc
+      v₁.s ≫ d₂.h ≫ u' = (v₂.f ≫ d₂.u) ≫ u' : by rw [←category.assoc, d₂.comm]
+      ... = v₂.f ≫ (d₁.u ≫ h') : by rw [category.assoc, hc]
+      ... = v₁.s ≫ d₁.h ≫ h' : by {rw [←category.assoc, d₁.comm], simp},
+    have h₂ : _, from M.cancel ⟨v₁.qis, h₁⟩,
+    rcases h₂ with ⟨Z', s', hs', hc'⟩,
+
+    let h'' := h' ≫ s',
+    let u'' := u' ≫ s',
+    have h₂ : d₂.h ≫ u'' = d₁.h ≫ h'', by rw [←category.assoc, hc', category.assoc],
+    have h₃ : d₂.u ≫ u'' = d₁.u ≫ h'', by rw [←category.assoc, hc, category.assoc],
+    have hu'' : S u'', from M.comp ⟨hu', hs'⟩,
+
+    apply quotient.eq.mpr,
+    have v : valley X Z := {
+      obj := {as := Z'},
+      f   := v₁.f ≫ d₂.h ≫ u'',
+      s   := v₂.s ≫ d₂.u ≫ u'',
+      qis := triple_comp M ⟨v₂.qis, d₂.hu, hu''⟩,
+    },
+    have heq : v.obj.as = Z', from
+    begin
+      sorry -- Aargh!
+    end,
+    use v,
+    -- We want to use h'' here but it won't unify the types
+    sorry,
+  end
 end
+
 
 lemma comp_independent_of_data {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y Z) (d : comp_data v₁ v₂) :
   ⟦ comp_valley v₁ v₂ ⟧ = ⟦ comp_valley_from_data v₁ v₂ d ⟧  :=
@@ -101,7 +135,6 @@ def id (X : left_calculus C M) := ⟦ id_valley X ⟧
 
 def comp {X Y Z : left_calculus C M} (f : hom_type X Y) (g : hom_type Y Z) := 
   ⟦ comp_valley (quotient.out f) (quotient.out g) ⟧
-  
 
 lemma id_comp' (X Y : left_calculus C M) (f :hom_type X Y) :
   comp (id X) f = f :=
@@ -169,8 +202,11 @@ begin
   exact valley_equiv_trans W Z heq₁ heq₂,
 end
 
-lemma assoc' {X Y Z W : left_calculus C M} (f : hom_type X Y) (g : hom_type Y Z) (h : hom_type Z W) :
+lemma assoc' {W X Y Z : left_calculus C M} (f : hom_type W X) (g : hom_type X Y) (h : hom_type Y Z) :
   comp (comp f g) h = comp f (comp g h) :=
+let a := f.out,
+    b := g.out,
+    c := h.out in
 begin
   sorry
 end

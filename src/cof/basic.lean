@@ -20,10 +20,10 @@ variables {C : Type u} [small_category C] {S : morphism_property C}
 -- Define a left multiplicative system for a morphism property S
 structure left_mult_sys (S : morphism_property C) :=
   (id     : ∀ {X : C}, S (𝟙 X))
-  (comp   : ∀ {X Y Z : C}, ∀ f : X ⟶ Y, ∀ g : Y ⟶ Z, S f ∧ S g → S ( f ≫ g ))
+  (comp   : ∀ {X Y Z : C}, ∀ {f : X ⟶ Y}, ∀ {g : Y ⟶ Z}, S f ∧ S g → S ( f ≫ g ))
   (ore    : ∀ {X Y Z : C}, ∀ g : X ⟶ Y, ∀ t : X ⟶ Z, S t →
             ∃ W : C, ∃ f : Z ⟶ W, ∃ s : Y  ⟶ W, S s ∧ (g ≫ s) = (t ≫ f))
-  (cancel : ∀ {X Y Z : C}, ∀ f g : X ⟶ Y, ∀ t : Z ⟶ X, S t ∧ (t ≫ f) = (t ≫ g) →
+  (cancel : ∀ {X Y Z : C}, ∀ {f g : X ⟶ Y}, ∀ {t : Z ⟶ X}, S t ∧ (t ≫ f) = (t ≫ g) →
             ∃ W : C, ∃ s : Y ⟶ W, S s ∧ (f ≫ s) = (g ≫ s))
 
 -- Wrap the objects of C into a new category
