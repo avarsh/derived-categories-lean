@@ -79,7 +79,6 @@ def comp_valley {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y
   comp_valley_from_data v₁ v₂ data_from_ore
 
 -- Composition is well defined under the equivalence relation
-
 lemma comp_independent_of_data' {X Y Z : left_calculus C M} (v₁ : valley X Y) (v₂ : valley Y Z) (d₁ d₂ : comp_data v₁ v₂) :
   ⟦ comp_valley_from_data v₁ v₂ d₁ ⟧ = ⟦ comp_valley_from_data v₁ v₂ d₂ ⟧  :=
 let c₁ := comp_valley_from_data v₁ v₂ d₁, c₂ := comp_valley_from_data v₁ v₂ d₂ in
@@ -99,19 +98,31 @@ match M.ore d₂.u d₁.u d₁.hu with ⟨W, h', u', hu', hc⟩ :=
     have hu'' : S u'', from M.comp ⟨hu', hs'⟩,
 
     apply quotient.eq.mpr,
-    have v : valley X Z := {
+    
+    let v : valley X Z := {
       obj := {as := Z'},
       f   := v₁.f ≫ d₂.h ≫ u'',
       s   := v₂.s ≫ d₂.u ≫ u'',
       qis := triple_comp M ⟨v₂.qis, d₂.hu, hu''⟩,
     },
-    have heq : v.obj.as = Z', from
-    begin
-      sorry -- Aargh!
-    end,
     use v,
-    -- We want to use h'' here but it won't unify the types
-    sorry,
+    use h'',
+    use u'',
+
+    simp, split,
+    have hlemma : c₁.f = (v₁.f ≫ d₁.h), by refl, 
+    rw [hlemma, h₂], simp,
+
+    split,
+    have hlemma : c₁.s = (v₂.s ≫ d₁.u), by refl,
+    rw [hlemma, h₃], simp,
+
+    split,
+    have hlemma : c₂.f = (v₁.f ≫ d₂.h), by refl,
+    rw hlemma, simp,
+
+    have hlemma : c₂.s = (v₂.s ≫ d₂.u), by refl,
+    rw hlemma, simp,
   end
 end
 
@@ -120,11 +131,64 @@ lemma comp_independent_of_data {X Y Z : left_calculus C M} (v₁ : valley X Y) (
   ⟦ comp_valley v₁ v₂ ⟧ = ⟦ comp_valley_from_data v₁ v₂ d ⟧  :=
 comp_independent_of_data' v₁ v₂ data_from_ore d
 
+lemma dom_imp_post_comp {X Y Z : left_calculus C M} (v₁ v₂ : valley X Y) (dom : v₁ E v₂) : 
+  ∀ w : valley Y Z, ⟦ comp_valley v₁ w ⟧ = ⟦ comp_valley v₂ w ⟧ :=
+begin
+  rcases dom with ⟨a, ha₁, ha₂⟩,
+  
+  intro w,
+  let g := w.f,
+  have hore : _ := M.ore g v₂.s v₂.qis,
+  rcases hore with ⟨Z'', h, u, hu, hcomm⟩,
+
+  have hcomm' : g ≫ u = v₁.s ≫ a ≫ h, by {rw [←category.assoc, ha₂], exact hcomm},
+  let d₁ : comp_data v₁ w := {
+    W := Z'',
+    h := a ≫ h,
+    u := u,
+    hu := hu,
+    comm := hcomm',
+  },
+  let d₂ : comp_data v₂ w := {
+    W := Z'',
+    h := h,
+    u := u,
+    hu := hu,
+    comm := hcomm,
+  },
+  have hcomp₁ : _ := comp_independent_of_data v₁ w d₁,
+  have hcomp₂ : _ := comp_independent_of_data v₂ w d₂,
+
+  let c₁ := comp_valley_from_data v₁ w d₁,
+  let c₂ := comp_valley_from_data v₂ w d₂,
+  suffices heq : ⟦ c₁ ⟧ = ⟦ c₂ ⟧, by rw [hcomp₁, hcomp₂, heq],
+
+  suffices heq' : veq X Z c₁ c₂, by {apply quotient.eq.mpr, exact heq'},
+  
+  use Z'',
+  use c₁.f,
+  use c₂.s,
+  use c₂.qis,
+  use 𝟙 Z'',
+  use 𝟙 Z'',
+  simp,
+  have hlemma : ∀ {X : C}, ∀ f : X ⟶ Z'', f ≫ 𝟙 Z'' = f, by {intro f, simp},
+  split,
+  exact hlemma c₁.f,
+  rw [hlemma c₁.s], split, refl, split, rw [hlemma c₂.f],
+  have hc₂ : c₂.f = v₂.f ≫ h, by refl, rw hc₂,
+  have hc₁ : c₁.f = v₁.f ≫ a ≫ h, by refl, rw hc₁,
+  rw [←category.assoc, ha₁],
+  rw hlemma c₂.s,
+end
+
 lemma comp_well_def {X Y Z : left_calculus C M}  (v₁ v₁' : valley X Y) (v₂ v₂' : valley Y Z) :
   ⟦ v₁ ⟧ = ⟦ v₁' ⟧ ∧ ⟦ v₂ ⟧ = ⟦ v₂' ⟧ → ⟦ comp_valley v₁ v₂ ⟧ = ⟦ comp_valley v₁' v₂' ⟧ := 
 begin
   rintro ⟨ h₁, h₂ ⟩,
-  sorry,
+  have h₁' : _ := quotient.eq.mp h₁,
+  have h₂' : _ := quotient.eq.mp h₂,
+  sorry
 end
 
 -- The axioms for the category
@@ -194,7 +258,7 @@ begin
     obj := ⟨ Z''' ⟩,
     f   := a.f ≫ f₁ ≫ f₃,
     s   := c.s ≫ s₂ ≫ s₃,
-    qis  := triple_comp M c.s s₂ s₃ ⟨c.qis, hs₂, hs₃⟩,
+    qis  := triple_comp M ⟨c.qis, hs₂, hs₃⟩,
   },
 
   have heq₁ : veq W Z lassoc v, from sorry,
