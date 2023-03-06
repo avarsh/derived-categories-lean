@@ -55,17 +55,17 @@ lemma dom_iff_equiv {X Y : left_calculus C M} (u v : valley X Y) :
   (∃ w : valley X Y, (u E w) ∧ (v E w)) ↔ veq X Y u v :=
 begin
   split,
-    rintro ⟨ w, h₁, h₂ ⟩,
+  { rintro ⟨ w, h₁, h₂ ⟩,
     rcases h₁ with ⟨ f, h₁' ⟩,
     rcases h₂ with ⟨ g, h₂' ⟩,
     use w.obj.as, use w.f, use w.s, use w.qis, use f, use g,
-    exact ⟨ h₁'.left, h₁'.right, h₂' ⟩,
+    exact ⟨ h₁'.left, h₁'.right, h₂' ⟩ },
 
-    rintro ⟨ w, f, g, h₁, h₂, h₃, h₄ ⟩,
+  { rintro ⟨ w, f, g, h₁, h₂, h₃, h₄ ⟩,
     use w,
     split,
       exact ⟨f, ⟨h₁, h₂⟩⟩,
-      exact ⟨g, ⟨h₃, h₄⟩⟩
+      exact ⟨g, ⟨h₃, h₄⟩⟩ }
 end
 
 
