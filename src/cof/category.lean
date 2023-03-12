@@ -270,9 +270,9 @@ def id (X : left_calculus C M) := ⟦ id_valley X ⟧
 def comp {X Y Z : left_calculus C M} (f : hom_type X Y) (g : hom_type Y Z) := 
   ⟦ comp_valley (quotient.out f) (quotient.out g) ⟧
 
-lemma id_comp' (X Y : left_calculus C M) (f :hom_type X Y) :
+lemma id_comp' (X Y : left_calculus C M) (f : hom_type X Y) :
   comp (id X) f = f :=
-let g  := comp (id X) f,
+let g := comp (id X) f,
     f' := f.out,
     data : comp_data (id_valley X) f' :=
       { W := f'.obj.as,
@@ -282,56 +282,62 @@ let g  := comp (id X) f,
         comm := have h : (id_valley X).s = 𝟙 X.as, from rfl,
           by {simp, rw h, simp},
       },
-    g' := comp_valley_from_data (id_valley X) f.out data in
+    g' := comp_valley_from_data (id_valley X) f' data in
 begin
-  suffices hlift : veq X Y g.out f', from begin
-      apply quotient.out_equiv_out.mp,
-      exact hlift,
-    end,
-  have h₁ : veq X Y g.out g', from begin
-      suffices heq : g = ⟦g'⟧, from begin 
-        have hout : veq X Y g.out (⟦g'⟧.out), from quotient.out_equiv_out.mpr heq,
-        have hout' : veq X Y ⟦g'⟧.out g', from quotient.mk_out g',
-        exact valley_equiv_trans X Y hout hout',
-      end,
-      sorry,
-    end,
-  suffices h' : veq X Y g' f', from valley_equiv_trans X Y h₁ h',
-  use g', use 𝟙 g'.obj.as, use 𝟙 g'.obj.as, 
-  simp,
-  have heq₁ : g'.f = (𝟙 X.as ≫ f'.f), from rfl,
-  have heq₂ : g'.s = (f'.s ≫ 𝟙 f'.obj.as), from rfl,
-  rw [heq₁, heq₂],
-  have h₁ : 𝟙 g'.obj.as = 𝟙 f'.obj.as, from rfl,
-  rw h₁,
-  simp,
+  change g = f,
+  have h₁ : g = ⟦ comp_valley (id_valley X) f' ⟧, 
+    by { apply comp_well_def, split, simp, refl, refl },
+  have h₂ : ⟦ comp_valley (id_valley X) f' ⟧ = ⟦ comp_valley_from_data (id_valley X) f' data ⟧,
+    from comp_independent_of_data _ _ _,
+  rw [h₁, h₂],
+  suffices : veq X Y g' f', by {
+      apply quotient.mk_eq_iff_out.mpr,
+      exact this,
+  },
+  use [f', 𝟙 f'.obj.as, 𝟙 f'.obj.as], simp,
+  have hlemma : ∀ {X : C}, ∀ f : X ⟶ f'.obj.as, f ≫ 𝟙 f'.obj.as = f, by {intro f, simp},
+  split,
+  { have : g'.f = (𝟙 X.as) ≫ f'.f, by refl, rw this,
+    simp,
+    rw hlemma f'.f },
+  { have : g'.s = f'.s ≫ (𝟙 f'.obj.as), by refl, rw this, 
+    simp,
+    rw hlemma f'.s},
 end
 
--- We don't need this here
-def modify_ore {X Y Z W A₁ A₂ : C} (data : @ore_data C _ S X Y Z) 
-  {s : A₁ ⟶ A₂} (hs : S s) (g₁ : A₂ ⟶ Y) (g₂ : A₂ ⟶ Z) (hc : s ≫ g₂ ≫ data.f₂ = s ≫ g₁ ≫ data.s₂) : 
-  ∃ (d' : @ore_data C _ S X Y Z), g₂ ≫ d'.f₂ = g₁ ≫ d'.s₂ := 
-sorry
-
-lemma assoc_out {W X Y Z : left_calculus C M} (a : valley W X) (b : valley X Y) (c : valley Y Z) :
-  veq W Z (comp_valley (comp_valley a b) c) (comp_valley a (comp_valley b c)) :=
-let lassoc := (comp_valley (comp_valley a b) c),
-    rassoc := (comp_valley a (comp_valley b c)) in
+lemma comp_id' (X Y : left_calculus C M) (f : hom_type X Y) :
+  comp f (id Y) = f :=
+let g := comp f (id Y),
+    f' := f.out,
+    data : comp_data f' (id_valley Y) :=
+      { W := f'.obj.as,
+        h := (𝟙 f'.obj.as),
+        u := f'.s,
+        hu := f'.qis,
+        comm := have h : (id_valley Y).f = 𝟙 Y.as, from rfl,
+          by {simp, rw h, simp},
+      },
+    g' := comp_valley_from_data f' (id_valley Y) data in
 begin
-  rcases (M.ore b.f a.s a.qis) with ⟨Y'', f₁, s₁, hs₁, hc₁⟩,
-  rcases (M.ore c.f b.s b.qis) with ⟨Z'', f₂, s₂, hs₂, hc₂⟩,
-  rcases (M.ore f₂ s₁ hs₁)     with ⟨Z''', f₃, s₃, hs₃, hc₃⟩,
-
-  have v : valley W Z := {
-    obj := ⟨ Z''' ⟩,
-    f   := a.f ≫ f₁ ≫ f₃,
-    s   := c.s ≫ s₂ ≫ s₃,
-    qis  := triple_comp M ⟨c.qis, hs₂, hs₃⟩,
+  change g = f,
+  have h₁ : g = ⟦ comp_valley f' (id_valley Y) ⟧, 
+    by { apply comp_well_def, split, simp, simp, refl },
+  have h₂ : ⟦ comp_valley f' (id_valley Y) ⟧ = ⟦ comp_valley_from_data f' (id_valley Y) data ⟧,
+    from comp_independent_of_data _ _ _,
+  rw [h₁, h₂],
+  suffices : veq X Y g' f', by {
+      apply quotient.mk_eq_iff_out.mpr,
+      exact this,
   },
-
-  have heq₁ : veq W Z lassoc v, from sorry,
-  have heq₂ : veq W Z v rassoc, from sorry,
-  exact valley_equiv_trans W Z heq₁ heq₂,
+  use [f', 𝟙 f'.obj.as, 𝟙 f'.obj.as], simp,
+  have hlemma : ∀ {X : C}, ∀ f : X ⟶ f'.obj.as, f ≫ 𝟙 f'.obj.as = f, by {intro f, simp},
+  split,
+  { have : g'.f = f'.f ≫ (𝟙 f'.obj.as), by refl, rw this,
+    simp,
+    rw hlemma f'.f },
+  { have : g'.s = (𝟙 Y.as) ≫ f'.s, by refl, rw this, 
+    simp,
+    rw hlemma f'.s},
 end
 
 lemma assoc' {W X Y Z : left_calculus C M} (f : hom_type W X) (g : hom_type X Y) (h : hom_type Y Z) :
@@ -340,7 +346,83 @@ let a := f.out,
     b := g.out,
     c := h.out in
 begin
-  sorry
+  rcases (M.ore b.f a.s a.qis) with ⟨Y'', f₁, s₁, hs₁, hc₁⟩,
+  rcases (M.ore c.f b.s b.qis) with ⟨Z'', f₂, s₂, hs₂, hc₂⟩,
+  rcases (M.ore f₂ s₁ hs₁)     with ⟨Z''', f₃, s₃, hs₃, hc₃⟩,
+
+  let v : valley W Z := {
+    obj := ⟨ Z''' ⟩,
+    f   := a.f ≫ f₁ ≫ f₃,
+    s   := c.s ≫ s₂ ≫ s₃,
+    qis  := triple_comp M ⟨c.qis, hs₂, hs₃⟩,
+  },
+
+  let d₁ : comp_data a b := {
+    W := Y'',
+    h := f₁,
+    u := s₁,
+    hu := hs₁,
+    comm := hc₁,
+  },
+  let d₂ : comp_data b c := {
+    W := Z'',
+    h := f₂,
+    u := s₂,
+    hu := hs₂,
+    comm := hc₂,
+  },
+
+  let cab := comp_valley_from_data a b d₁,
+  let cbc := comp_valley_from_data b c d₂,
+  have h₁ : comp f g = ⟦ cab ⟧, by {apply comp_independent_of_data},
+  have h₂ : comp g h = ⟦ cbc ⟧, by {apply comp_independent_of_data},
+  rw [h₁, h₂],
+
+  let d₃ : comp_data cab c := {
+    W := Z''',
+    h := f₃,
+    u := s₂ ≫ s₃,
+    hu := M.comp ⟨hs₂, hs₃⟩,
+    comm := begin 
+      have : cab.s = b.s ≫ s₁, by refl, 
+      rw [this, category.assoc, ←hc₃, ←category.assoc, hc₂], 
+      simp, 
+    end,
+  },
+  let d₄ : comp_data a cbc := {
+    W := Z''',
+    h := f₁ ≫ f₃,
+    u := s₃,
+    hu := hs₃,
+    comm := begin 
+      rw [←category.assoc, ←hc₁, category.assoc, ←hc₃, ←category.assoc], 
+      refl,
+    end,
+  },
+  let ccabc := comp_valley_from_data cab c d₃,
+  let cacbc := comp_valley_from_data a cbc d₄,
+  
+  have hcomp₁ : comp ⟦cab⟧ h = ⟦ ccabc ⟧, by calc
+    comp ⟦cab⟧ h = ⟦comp_valley cab c⟧ : by {apply comp_well_def, simp}
+    ... = ⟦ ccabc ⟧ : by {apply comp_independent_of_data},
+  have hcomp₂ : comp f ⟦cbc⟧ = ⟦ cacbc ⟧, by calc
+    comp f ⟦cbc⟧ = ⟦comp_valley a cbc⟧ : by {apply comp_well_def, simp}
+    ... = ⟦ cacbc ⟧ : by {apply comp_independent_of_data},
+  rw [hcomp₁, hcomp₂],
+
+  clear hcomp₁, clear hcomp₂,
+
+  apply quotient.eq.mpr,
+  use [v, (𝟙 Z'''), (𝟙 Z''')],
+  simp, 
+  have hlemma : ∀ {X : C}, ∀ f : X ⟶ Z''', f ≫ 𝟙 Z''' = f, by {intro f, simp},
+  repeat {rw hlemma}, split, 
+    {rw ←category.assoc, refl},
+  split,
+    {refl},
+  split,
+    {refl},
+    {rw ←category.assoc, refl}
 end
 
 -- Define the category structure
@@ -349,10 +431,9 @@ instance : category (left_calculus C M) :=
 { hom  := hom_type,
   id   := id,
   comp := λ _ _ _ f g, comp f g,
-  -- It seems like we need to prove these manually too
   id_comp' := id_comp',
-  comp_id' := sorry,
-  assoc' := sorry,
+  comp_id' := comp_id',
+  assoc' := λ _ _ _ _, assoc',
 }
 
 end derived
