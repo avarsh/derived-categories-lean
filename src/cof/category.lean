@@ -410,8 +410,6 @@ begin
     ... = ⟦ cacbc ⟧ : by {apply comp_independent_of_data},
   rw [hcomp₁, hcomp₂],
 
-  clear hcomp₁, clear hcomp₂,
-
   apply quotient.eq.mpr,
   use [v, (𝟙 Z'''), (𝟙 Z''')],
   simp, 
@@ -430,7 +428,7 @@ end
 instance : category (left_calculus C M) :=
 { hom  := hom_type,
   id   := id,
-  comp := λ _ _ _ f g, comp f g,
+  comp := λ _ _ _, comp,
   id_comp' := id_comp',
   comp_id' := comp_id',
   assoc' := λ _ _ _ _, assoc',
