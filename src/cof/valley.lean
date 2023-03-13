@@ -35,9 +35,11 @@ def veq (X Y : left_calculus C M) (v₁ v₂ : valley X Y) : Prop :=
     (v₁.f ≫ u₁) = v₃.f ∧ (v₁.s ≫ u₁) = v₃.s ∧ 
     (v₂.f ≫ u₂) = v₃.f ∧ (v₂.s ≫ u₂) = v₃.s
 
+@[simp]
 lemma valley_equiv_refl (X Y : left_calculus C M) : reflexive (veq X Y) :=
   λ v, ⟨ v, 𝟙 v.obj.as, 𝟙 v.obj.as, by simp, by simp, by simp, by simp ⟩
 
+@[simp]
 lemma valley_equiv_symm (X Y : left_calculus C M) : symmetric (veq X Y) :=
 λ v w h, let ⟨u, ⟨ f, g, comm₁, comm₂, comm₃, comm₄ ⟩ ⟩ := h in
   ⟨ u, g, f, comm₃, comm₄, comm₁, comm₂ ⟩

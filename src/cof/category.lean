@@ -270,6 +270,7 @@ def id (X : left_calculus C M) := ⟦ id_valley X ⟧
 def comp {X Y Z : left_calculus C M} (f : hom_type X Y) (g : hom_type Y Z) := 
   ⟦ comp_valley (quotient.out f) (quotient.out g) ⟧
 
+@[simp]
 lemma id_comp' (X Y : left_calculus C M) (f : hom_type X Y) :
   comp (id X) f = f :=
 let g := comp (id X) f,
@@ -305,6 +306,7 @@ begin
     rw hlemma f'.s},
 end
 
+@[simp]
 lemma comp_id' (X Y : left_calculus C M) (f : hom_type X Y) :
   comp f (id Y) = f :=
 let g := comp f (id Y),
@@ -433,6 +435,62 @@ instance : category (left_calculus C M) :=
   comp_id' := comp_id',
   assoc' := λ _ _ _ _, assoc',
 }
+
+-- Some properties of this category
+
+-- We have a canonical functor
+@[simps]
+def Q : C ⥤ left_calculus C M :=
+{ obj := λ a, { as := a },
+  map := λ X Y f, ⟦{ obj := ⟨ Y ⟩, f := f, s := 𝟙 Y, qis := M.id }⟧,
+  map_comp' := λ X Y Z f g, begin
+    -- Simplify notation
+    let v₁ : valley ⟨X⟩ ⟨Z⟩ := {obj := {as := Z}, f := f ≫ g, s := 𝟙 Z, qis := _},
+    let v₂ : valley ⟨X⟩ ⟨Y⟩ := {obj := {as := Y}, f := f, s := 𝟙 Y, qis := _},
+    let v₃ : valley ⟨Y⟩ ⟨Z⟩ := {obj := {as := Z}, f := g, s := 𝟙 Z, qis := _},
+    let c₁ : hom_type ⟨X⟩ ⟨Z⟩ := ⟦v₁⟧,
+    let c₂ : hom_type ⟨X⟩ ⟨Z⟩ := comp ⟦v₂⟧ ⟦v₃⟧,
+    suffices h : c₁ = c₂, by exact h,
+
+    have h' : c₂ = ⟦ comp_valley v₂ v₃ ⟧, by calc
+        c₂ = ⟦comp_valley v₂ ⟦v₃⟧.out⟧ : by
+          {apply comp_well_def, simp, split, repeat {apply (valley_equiv_refl _ _)}}
+        ... = ⟦comp_valley v₂ v₃⟧ : by
+          {apply comp_well_def, simp, split, repeat {apply (valley_equiv_refl _ _)}},
+    rw h',
+
+    have h'' : ⟦ comp_valley v₂ v₃ ⟧ = c₁, by begin
+      let d : comp_data v₂ v₃ := 
+        { W := Z, h := g, u := 𝟙 Z, hu := M.id, comm := by simp },
+      let c₄ := comp_valley_from_data v₂ v₃ d,
+      have : ⟦comp_valley v₂ v₃⟧ = ⟦c₄⟧, by apply comp_independent_of_data,
+      rw this,
+
+      apply quotient.eq.mpr,
+      use [v₁, 𝟙 Z], simp, 
+
+      have : c₄.f = f ≫ g, by refl, rw this,
+      have : c₄.s = 𝟙 Z ≫ 𝟙 Z, by refl, rw this,
+      simp, rw ←category.assoc, 
+      have hlemma : ∀ {X : C}, ∀ f : X ⟶ Z, f ≫ 𝟙 Z = f, by simp,
+      rw hlemma,
+    end,
+    rw ←h'',
+  end }
+
+theorem functor_inverts_qis {X Y : C} (s : X ⟶ Y) [qis : S s] : @is_iso (left_calculus C M) _ _ _ (Q.map s) := 
+⟨ begin 
+    let v : valley ⟨Y⟩ ⟨X⟩ := {obj := ⟨Y⟩, f := 𝟙 Y, s := s, qis := qis}, 
+    use ⟦ v ⟧,
+    sorry,
+  end ⟩
+
+theorem functor_univ_prop {D : Type u} [category D] (g : C ⥤ D) : 
+  (∀ X Y : C, ∀ s : X ⟶ Y, S s → is_iso (g.map s)) 
+  → ∃! h : left_calculus C M ⥤ D, g = Q ⋙ h := 
+begin
+  sorry
+end
 
 end derived
 
